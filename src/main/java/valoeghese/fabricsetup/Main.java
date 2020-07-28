@@ -5,18 +5,23 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.io.UncheckedIOException;
 import java.net.URL;
 
+import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
+import javax.swing.JTextField;
 import javax.swing.UIManager;
 import javax.swing.border.TitledBorder;
 
@@ -24,16 +29,52 @@ import tk.valoeghese.zoesteriaconfig.api.container.WritableConfig;
 import tk.valoeghese.zoesteriaconfig.impl.parser.ImplZoesteriaDefaultDeserialiser;
 
 public class Main {
-	public static void main(String[] args) {
+	public static void main(String[] args) throws Throwable {
 		JFrame frame = new JFrame();
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
 		try {
-			frame.setTitle("Fabric Setup");
+			WritableConfig masterOptions = parseOnlineOrLocal("master.zfg");
 
+					JPanel master = new JPanel(new BorderLayout());
+			master.setPreferredSize(new Dimension(250, 300));
+
+			// top
+			JTextField workspaceName = new JTextField();
+			master.setBorder(new TitledBorder("Workspace Name"));
+			master.add(workspaceName, BorderLayout.NORTH);
+
+			// centre
 			JPanel versions = new JPanel(new BorderLayout());
-			versions.setBorder(new TitledBorder("Version"));
+			versions.setBorder(new TitledBorder("Details"));
+			{
+				JComboBox<String> minecraftVersion = new JComboBox<>();
+			}
+			master.add(versions, BorderLayout.CENTER);
 
+			// bottom
+			JButton create = new JButton();
+			create.setText("Create Workspace");
+			create.addActionListener(e -> {
+				String wnm = workspaceName.getText().trim();
+
+				if (wnm != null && !wnm.isEmpty()) {
+					File dir = new File(wnm);
+
+					if (dir.exists()) {
+						JOptionPane.showMessageDialog(frame, "A file/folder with the given name already exists in this directory.", "File/Folder already exists!", JOptionPane.ERROR_MESSAGE);
+					} else {
+						dir.mkdirs();
+					}
+					return;
+				}
+
+				JOptionPane.showMessageDialog(frame, "The workspace name is either empty or contains invalid characters. Please try again.", "Invalid workspace name!", JOptionPane.ERROR_MESSAGE);
+			});
+			master.add(create, BorderLayout.SOUTH);
+
+			frame.add(master);
+			frame.setTitle("Fabric Setup");
 			frame.pack();
 			frame.setVisible(true);
 		} catch (Throwable t) {
@@ -63,7 +104,7 @@ public class Main {
 
 			container.add(scroll, BorderLayout.CENTER);
 
-			JDialog dialog = new JDialog(frame, "The Game has Crashed!", true);
+			JDialog dialog = new JDialog(frame, "The Program has Crashed!", true);
 			dialog.setContentPane(container);
 			dialog.addWindowListener(new WindowAdapter() {
 				@Override
@@ -76,7 +117,11 @@ public class Main {
 		}
 	}
 
-	private static WritableConfig getOnlineOrLocal(String name) {
+	private static WritableConfig parseOnlineOrLocal(String name) {
+		return new StringZFGParser<>(readOnlineOrLocal(name), new ImplZoesteriaDefaultDeserialiser(true)).asWritableConfig();
+	}
+
+	private static String readOnlineOrLocal(String name) {
 		String result;
 
 		try {
@@ -92,7 +137,7 @@ public class Main {
 			}
 		}
 
-		return new StringZFGParser<>(result, new ImplZoesteriaDefaultDeserialiser(true)).asWritableConfig();
+		return result;
 	}
 
 	// wow thanks stackoverflow
