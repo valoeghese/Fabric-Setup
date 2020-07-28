@@ -2,6 +2,7 @@ package valoeghese.fabricsetup;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
@@ -13,6 +14,7 @@ import java.io.UncheckedIOException;
 import java.net.URL;
 
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
@@ -36,8 +38,8 @@ public class Main {
 		try {
 			WritableConfig masterOptions = parseOnlineOrLocal("master.zfg");
 
-					JPanel master = new JPanel(new BorderLayout());
-			master.setPreferredSize(new Dimension(250, 300));
+			JPanel master = new JPanel(new BorderLayout());
+			master.setPreferredSize(new Dimension(250, 320));
 
 			// top
 			JTextField workspaceName = new JTextField();
@@ -45,14 +47,46 @@ public class Main {
 			master.add(workspaceName, BorderLayout.NORTH);
 
 			// centre
-			JPanel versions = new JPanel(new BorderLayout());
-			versions.setBorder(new TitledBorder("Details"));
-			{
-				JComboBox<String> minecraftVersion = new JComboBox<>();
-			}
-			master.add(versions, BorderLayout.CENTER);
+			JPanel settings = new JPanel(new BorderLayout());
+			settings.setBorder(new TitledBorder("Settings"));
 
-			// bottom
+			// Minecraft/Yarn Stuff
+			JPanel pureMC = new JPanel(new BorderLayout());
+			String[] vs = masterOptions.getList("versions").toArray(new String[0]);
+			JComboBox<String> minecraftVersion = new JComboBox<>(vs);
+			minecraftVersion.setBorder(new TitledBorder("Minecraft Version"));
+			pureMC.add(minecraftVersion, BorderLayout.NORTH);
+
+			JTextField yarnBuild = new JTextField();
+			yarnBuild.setText(masterOptions.getStringValue(vs[0].replace('.', '-') + ".yarn_latest"));
+			pureMC.add(yarnBuild, BorderLayout.SOUTH);
+
+			settings.add(pureMC, BorderLayout.NORTH);
+
+			// Lib stuff - FAPI, CC, ZFG, ACFG, Terraform
+			JPanel libs = new JPanel(new FlowLayout(FlowLayout.LEFT));
+			libs.setBorder(new TitledBorder("Libraries"));
+
+			JCheckBox fabricAPI = new JCheckBox("Fabric API");
+			fabricAPI.setSelected(true);
+			libs.add(fabricAPI);
+
+			JCheckBox cardinalComponents = new JCheckBox("Cardinal Components");
+			libs.add(cardinalComponents);
+
+			JCheckBox zoesteriaConfig = new JCheckBox("Zoesteria Config");
+			libs.add(zoesteriaConfig);
+
+			JCheckBox autoConfig = new JCheckBox("AutoConfig");
+			libs.add(autoConfig);
+
+			JCheckBox terraform = new JCheckBox("Terraform");
+			libs.add(terraform);
+
+			settings.add(libs, BorderLayout.CENTER);
+			master.add(settings, BorderLayout.CENTER);
+
+			// bottom - button
 			JButton create = new JButton();
 			create.setText("Create Workspace");
 			create.addActionListener(e -> {
