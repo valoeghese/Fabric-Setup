@@ -16,7 +16,7 @@
   
   "entrypoints": {
     "main": [
-       "%GROUP%.%MODID%.%MAINCLASS%"
+      "%GROUP%.%MODID%.%MAINCLASS%"
     ]
   },
   
