@@ -1,11 +1,11 @@
 package valoeghese.fabricsetup;
 
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.function.UnaryOperator;
 
 public class Replacement implements UnaryOperator<String> {
-	private final Map<String, String> replacements = new HashMap<>();
+	private final Map<String, String> replacements = new LinkedHashMap<>();
 
 	public Replacement replaces(String regex, String with) {
 		this.replacements.put(regex, with);

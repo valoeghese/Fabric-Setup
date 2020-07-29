@@ -33,7 +33,8 @@ public class StringZFGParser<E extends ZFGExtendedDeserialiser<T>, T> {
 			if (c == '}') {
 				break;
 			} else if (c == '#') { // comment
-				container.readComment(this.parseComment(data));
+				// TODO in ZFG 1.3.5 make comment stripping apply to within lists
+//				container.readComment(this.parseComment(data));
 			} else if (mode == 1) {
 				if (!Character.isWhitespace(c)) {
 					if (c == '{') { // new container
