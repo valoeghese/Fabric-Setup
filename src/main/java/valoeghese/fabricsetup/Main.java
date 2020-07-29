@@ -7,14 +7,9 @@ import java.awt.Font;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
-import java.io.PrintWriter;
-import java.io.UncheckedIOException;
-import java.net.URL;
 
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -27,11 +22,9 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
-import javax.swing.UIManager;
 import javax.swing.border.TitledBorder;
 
 import tk.valoeghese.zoesteriaconfig.api.container.WritableConfig;
-import tk.valoeghese.zoesteriaconfig.impl.parser.ImplZoesteriaDefaultDeserialiser;
 
 public class Main {
 	public static void main(String[] args) throws Throwable {
@@ -39,7 +32,7 @@ public class Main {
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
 		try {
-			WritableConfig masterOptions = parseOnlineOrLocal("master.zfg");
+			WritableConfig masterOptions = ResourceLoader.parseOnlineOrLocal("master.zfg");
 
 			JPanel master = new JPanel(new BorderLayout());
 			master.setPreferredSize(new Dimension(275, 350));
@@ -102,59 +95,63 @@ public class Main {
 			JButton create = new JButton();
 			create.setText("Create Workspace");
 			create.addActionListener(e -> {
-				String wnm = modId.getText().trim(); // workspace name
+				try {
+					String wnm = modId.getText().trim(); // workspace name
 
-				if (wnm != null && !wnm.isEmpty()) {
-					File dir = new File(wnm);
+					if (wnm != null && !wnm.isEmpty()) {
+						File dir = new File(wnm);
 
-					if (dir.isFile() || (dir.isDirectory() && dir.listFiles().length > 1)) {
-						JOptionPane.showMessageDialog(frame, "A file/folder with the given mod id already exists in this directory.", "File/Folder already exists!", JOptionPane.ERROR_MESSAGE);
-					} else {
-						String group = mavenGroup.getText().trim();
-
-						if (group.isEmpty()) {
-							JOptionPane.showMessageDialog(frame, "Maven group is empty!", "Invalid maven group", JOptionPane.ERROR_MESSAGE);
+						if (dir.isFile() || (dir.isDirectory() && dir.listFiles().length > 1)) {
+							JOptionPane.showMessageDialog(frame, "A file/folder with the given mod id already exists in this directory.", "File/Folder already exists!", JOptionPane.ERROR_MESSAGE);
 						} else {
-							dir.mkdirs();
+							String group = mavenGroup.getText().trim();
 
-							File gradleSettings = new File(dir, "settings.gradle");
-							write(gradleSettings, readOnlineOrLocal("settings.gradle.txt"));
+							if (group.isEmpty()) {
+								JOptionPane.showMessageDialog(frame, "Maven group is empty!", "Invalid maven group", JOptionPane.ERROR_MESSAGE);
+							} else {
+								dir.mkdirs();
 
-							File gradleBuild = new File(dir, "build.gradle");
-							write(gradleBuild, readOnlineOrLocal("build.gradle.txt"));
+								File gradleSettings = new File(dir, "settings.gradle");
+								ResourceLoader.write(gradleSettings, ResourceLoader.readOnlineOrLocal("settings.gradle.txt"));
 
-							File gitignore = new File(dir, ".gitignore");
-							write(gitignore, readOnlineOrLocal("gitignore.txt"));
+								File gradleBuild = new File(dir, "build.gradle");
+								ResourceLoader.write(gradleBuild, ResourceLoader.readOnlineOrLocal("build.gradle.txt"));
 
-							StringBuilder properties = new StringBuilder();
-							properties.append("# Done to increase the memory available to gradle.\n")
-							.append("org.gradle.jvmargs=-Xmx1G\n\n")
-							.append("# Fabric Properties\n")
-							.append("# check these on https://modmuss50.me/fabric.html")
-							.append("\nminecraft_version=").append(minecraftVersion.getSelectedItem())
-							.append("\nloader_version=").append(masterOptions.getStringValue("loader_latest"))
-							.append("\nyarn_build=").append(yarnBuild.getText())
-							.append("\n\n# Mod Properties")
-							.append("\nmod_version=1.0.0")
-							.append("\nmaven_group=").append(group)
-							.append("\narchives_base_name=").append(wnm);
+								File gitignore = new File(dir, ".gitignore");
+								ResourceLoader.write(gitignore, ResourceLoader.readOnlineOrLocal("gitignore.txt"));
 
-							File gradleProperties = new File(dir, "gradle.properties");
-							write(gradleProperties, properties.toString());
+								StringBuilder properties = new StringBuilder();
+								properties.append("# Done to increase the memory available to gradle.\n")
+								.append("org.gradle.jvmargs=-Xmx1G\n\n")
+								.append("# Fabric Properties\n")
+								.append("# check these on https://modmuss50.me/fabric.html")
+								.append("\nminecraft_version=").append(minecraftVersion.getSelectedItem())
+								.append("\nloader_version=").append(masterOptions.getStringValue("loader_latest"))
+								.append("\nyarn_build=").append(yarnBuild.getText())
+								.append("\n\n# Mod Properties")
+								.append("\nmod_version=1.0.0")
+								.append("\nmaven_group=").append(group)
+								.append("\narchives_base_name=").append(wnm);
 
-							File wrapperDir = new File(dir, "gradle/wrapper");
-							wrapperDir.mkdirs();
+								File gradleProperties = new File(dir, "gradle.properties");
+								ResourceLoader.write(gradleProperties, properties.toString());
 
-							File wrapperProperties = new File(wrapperDir, "gradle-wrapper.properties");
-							write(wrapperProperties, readOnlineOrLocal("gradle-wrapper.properties.txt"));
+								File wrapperDir = new File(dir, "gradle/wrapper");
+								wrapperDir.mkdirs();
 
-							copyJar(new File(wrapperDir, "gradle-wrapper.jar"), "gradle-wrapper.jar");
+								File wrapperProperties = new File(wrapperDir, "gradle-wrapper.properties");
+								ResourceLoader.write(wrapperProperties, ResourceLoader.readOnlineOrLocal("gradle/wrapper/gradle-wrapper.properties.txt"));
+
+								ResourceLoader.copyJar(new File(wrapperDir, "gradle-wrapper.jar"), "gradle/wrapper/gradle-wrapper.jar");
+							}
 						}
+						return;
 					}
-					return;
-				}
 
-				JOptionPane.showMessageDialog(frame, "The mod id is empty!. Please try again.", "Invalid workspace name!", JOptionPane.ERROR_MESSAGE);
+					JOptionPane.showMessageDialog(frame, "The mod id is empty!. Please input a mod id.", "Invalid workspace name!", JOptionPane.ERROR_MESSAGE);
+				} catch (Throwable t) {
+					byeBye(frame, t);
+				}
 			});
 			master.add(create, BorderLayout.SOUTH);
 
@@ -163,114 +160,47 @@ public class Main {
 			frame.pack();
 			frame.setVisible(true);
 		} catch (Throwable t) {
-			// I ripped this whole catch block from a swing ccg I'm making
-			t.printStackTrace();
-
-			StringBuilder sb = new StringBuilder();
-			t.printStackTrace(new PrintStream(new StringOutputStream(sb)));
-
-			JPanel container = new JPanel(new BorderLayout(0, 10));
-			JTextArea error = makeWrapping(new JLabel("The following error occurred."));
-
-			Font font = new Font(error.getFont().getName(), Font.BOLD, 15);
-			error.setFont(font);
-
-			container.add(error, BorderLayout.NORTH);
-
-			JTextArea crashReport = new JTextArea();
-			crashReport.setEditable(false);
-			crashReport.append(sb.toString());
-
-			JScrollPane scroll = new JScrollPane(
-					crashReport,
-					JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
-					JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-			scroll.setPreferredSize(new Dimension(600, 300));
-
-			container.add(scroll, BorderLayout.CENTER);
-
-			JDialog dialog = new JDialog(frame, "The Program has Crashed!", true);
-			dialog.setContentPane(container);
-			dialog.addWindowListener(new WindowAdapter() {
-				@Override
-				public void windowClosing(WindowEvent e) {
-					frame.dispatchEvent(new WindowEvent(frame, WindowEvent.WINDOW_CLOSING));
-				}
-			});
-			dialog.pack();
-			dialog.setVisible(true);
+			byeBye(frame, t);
 		}
 	}
 
-	private static WritableConfig parseOnlineOrLocal(String name) {
-		return new StringZFGParser<>(readOnlineOrLocal(name), new ImplZoesteriaDefaultDeserialiser(true)).asWritableConfig();
-	}
+	private static void byeBye(JFrame frame, Throwable t) {
+		// I ripped this whole catch block from a swing ccg I'm making
+		t.printStackTrace();
 
-	private static String readOnlineOrLocal(String name) {
-		String result;
+		StringBuilder sb = new StringBuilder();
+		t.printStackTrace(new PrintStream(new StringOutputStream(sb)));
 
-		try {
-			URL url = new URL("https://raw.githubusercontent.com/valoeghese/Fabric-Setup/master/src/main/resources/" + name);
-			result = ResourceLoader.readString(url::openStream);
-		} catch (IOException e) {
-			System.out.println("Likely no internet while retrieving online file for " + name + ", reverting to local copy.");
+		JPanel container = new JPanel(new BorderLayout(0, 10));
+		JTextArea error = ResourceLoader.makeWrapping(new JLabel("The following error occurred."));
 
-			try {
-				result = ResourceLoader.loadAsString(name);
-			} catch (IOException e1) {
-				throw new UncheckedIOException(e1);
+		Font font = new Font(error.getFont().getName(), Font.BOLD, 15);
+		error.setFont(font);
+
+		container.add(error, BorderLayout.NORTH);
+
+		JTextArea crashReport = new JTextArea();
+		crashReport.setEditable(false);
+		crashReport.append(sb.toString());
+
+		JScrollPane scroll = new JScrollPane(
+				crashReport,
+				JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
+				JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+		scroll.setPreferredSize(new Dimension(600, 300));
+
+		container.add(scroll, BorderLayout.CENTER);
+
+		JDialog dialog = new JDialog(frame, "The Program has Crashed!", true);
+		dialog.setContentPane(container);
+		dialog.addWindowListener(new WindowAdapter() {
+			@Override
+			public void windowClosing(WindowEvent e) {
+				frame.dispatchEvent(new WindowEvent(frame, WindowEvent.WINDOW_CLOSING));
 			}
-		}
-
-		return result;
-	}
-
-	private static void copyJar(File destination, String name) {
-		InputStream stream;
-
-		try {
-			URL url = new URL("https://raw.githubusercontent.com/valoeghese/Fabric-Setup/master/src/main/resources/" + name);
-			stream = url.openStream();
-		} catch (IOException e) {
-			System.out.println("Likely no internet while retrieving online file for " + name + ", reverting to local copy.");
-			stream = ResourceLoader.load(name);
-		}
-
-		try (FileOutputStream output = new FileOutputStream(destination)) {
-			int nBytesRead;
-			byte[] bufferBuffer = new byte[0x4000];
-
-			while ((nBytesRead = stream.read(bufferBuffer, 0, bufferBuffer.length)) != -1) {
-				output.write(bufferBuffer, 0, nBytesRead);
-			}
-
-			stream.close();
-		} catch (IOException e) {
-			throw new UncheckedIOException(e);
-		}
-	}
-
-	private static void write(File file, String string) {
-		try (PrintWriter pw = new PrintWriter(file)) {
-			pw.write(string);
-		} catch (IOException e) {
-			throw new UncheckedIOException(e);
-		}
-	}
-
-	// wow thanks stackoverflow
-	private static JTextArea makeWrapping(JLabel label) {
-		JTextArea result = new JTextArea();
-		result.setText(label.getText());
-		result.setWrapStyleWord(true);
-		result.setLineWrap(true);
-		result.setOpaque(false);
-		result.setEditable(false);
-		result.setFocusable(false);
-		result.setBackground(UIManager.getColor("Label.background"));
-		result.setFont(UIManager.getFont("Label.font"));
-		result.setBorder(UIManager.getBorder("Label.border"));
-		return result;
+		});
+		dialog.pack();
+		dialog.setVisible(true);
 	}
 
 	private static class StringOutputStream extends OutputStream {
