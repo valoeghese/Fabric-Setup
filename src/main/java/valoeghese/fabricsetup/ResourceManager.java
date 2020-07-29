@@ -18,13 +18,13 @@ import tk.valoeghese.zoesteriaconfig.api.container.WritableConfig;
 import tk.valoeghese.zoesteriaconfig.impl.parser.ImplZoesteriaDefaultDeserialiser;
 
 // Taken and adapted from 2fc0f18 source, adding extra functionality as well.
-public final class ResourceLoader {
+public final class ResourceManager {
 	public static URL loadURL(String location) {
-		return ResourceLoader.class.getClassLoader().getResource(location);
+		return ResourceManager.class.getClassLoader().getResource(location);
 	}
 
 	public static InputStream load(String location) {
-		return ResourceLoader.class.getClassLoader().getResourceAsStream(location);
+		return ResourceManager.class.getClassLoader().getResourceAsStream(location);
 	}
 
 	public static String loadAsString(String location) throws IOException {
@@ -55,12 +55,12 @@ public final class ResourceLoader {
 
 		try {
 			URL url = new URL("https://raw.githubusercontent.com/valoeghese/Fabric-Setup/master/src/main/resources/" + name);
-			result = ResourceLoader.readString(url::openStream);
+			result = ResourceManager.readString(url::openStream);
 		} catch (IOException e) {
 			System.out.println("Likely no internet while retrieving online file for " + name + ", reverting to local copy.");
 
 			try {
-				result = ResourceLoader.loadAsString(name);
+				result = ResourceManager.loadAsString(name);
 			} catch (IOException e1) {
 				throw new UncheckedIOException(e1);
 			}
@@ -77,7 +77,7 @@ public final class ResourceLoader {
 			stream = url.openStream();
 		} catch (IOException e) {
 			System.out.println("Likely no internet while retrieving online file for " + name + ", reverting to local copy.");
-			stream = ResourceLoader.load(name);
+			stream = ResourceManager.load(name);
 		}
 
 		try (FileOutputStream output = new FileOutputStream(destination)) {

@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "id": "%MODID%",
+  "version": "1.0.0",
+  
+  "name": "%MODNAME%",
+  "description": "Mod Description.",
+  "authors": [
+    "Valoeghese"
+  ],
+  
+  "icon": "assets/%MODID%/icon.png",
+  "license": "No Licence.",
+  
+  "environment": "*",
+  
+  "entrypoints": {
+    "main": [
+       "%GROUP%.%MODID%.%MAINCLASS%"
+    ]
+  },
+  
+  "requires": {
+    "fabricloader": ">=0.4.0"
+  },
+  
+  "mixins": [
+    "%MODID%.mixins.json"
+  ]
+}

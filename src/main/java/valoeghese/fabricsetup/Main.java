@@ -24,15 +24,20 @@ import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.border.TitledBorder;
 
+import tk.valoeghese.zoesteriaconfig.api.container.Container;
 import tk.valoeghese.zoesteriaconfig.api.container.WritableConfig;
 
 public class Main {
+	// Increment this and the ver in master.zfg when a change is made to the java program
+	// (Not when merely changing resources, as they can be fetched from online)
+	private static final int META_VER = 1;
+
 	public static void main(String[] args) throws Throwable {
 		JFrame frame = new JFrame();
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
 		try {
-			WritableConfig masterOptions = ResourceLoader.parseOnlineOrLocal("master.zfg");
+			WritableConfig masterOptions = ResourceManager.parseOnlineOrLocal("master.zfg");
 
 			JPanel master = new JPanel(new BorderLayout());
 			master.setPreferredSize(new Dimension(275, 350));
@@ -96,10 +101,10 @@ public class Main {
 			create.setText("Create Workspace");
 			create.addActionListener(e -> {
 				try {
-					String wnm = modId.getText().trim(); // workspace name
+					String workspaceModId = modId.getText().trim(); // workspace name / mod id
 
-					if (wnm != null && !wnm.isEmpty()) {
-						File dir = new File(wnm);
+					if (workspaceModId != null && !workspaceModId.isEmpty()) {
+						File dir = new File(workspaceModId);
 
 						if (dir.isFile() || (dir.isDirectory() && dir.listFiles().length > 1)) {
 							JOptionPane.showMessageDialog(frame, "A file/folder with the given mod id already exists in this directory.", "File/Folder already exists!", JOptionPane.ERROR_MESSAGE);
@@ -110,39 +115,92 @@ public class Main {
 								JOptionPane.showMessageDialog(frame, "Maven group is empty!", "Invalid maven group", JOptionPane.ERROR_MESSAGE);
 							} else {
 								dir.mkdirs();
+								Container vsn = masterOptions.getContainer(((String) minecraftVersion.getSelectedItem()).replace('.', '-'));
 
 								File gradleSettings = new File(dir, "settings.gradle");
-								ResourceLoader.write(gradleSettings, ResourceLoader.readOnlineOrLocal("settings.gradle.txt"));
+								ResourceManager.write(gradleSettings, ResourceManager.readOnlineOrLocal("settings.gradle.txt"));
 
-								File gradleBuild = new File(dir, "build.gradle");
-								ResourceLoader.write(gradleBuild, ResourceLoader.readOnlineOrLocal("build.gradle.txt"));
-
-								File gitignore = new File(dir, ".gitignore");
-								ResourceLoader.write(gitignore, ResourceLoader.readOnlineOrLocal("gitignore.txt"));
-
+								// properties
 								StringBuilder properties = new StringBuilder();
-								properties.append("# Done to increase the memory available to gradle.\n")
-								.append("org.gradle.jvmargs=-Xmx1G\n\n")
-								.append("# Fabric Properties\n")
-								.append("# check these on https://modmuss50.me/fabric.html")
+								properties.append("# Done to increase the memory available to gradle.")
+								.append("\norg.gradle.jvmargs=-Xmx1G")
+								.append("\n\n# Fabric Properties")
+								.append("\n# check these on https://modmuss50.me/fabric.html")
 								.append("\nminecraft_version=").append(minecraftVersion.getSelectedItem())
 								.append("\nloader_version=").append(masterOptions.getStringValue("loader_latest"))
 								.append("\nyarn_build=").append(yarnBuild.getText())
 								.append("\n\n# Mod Properties")
 								.append("\nmod_version=1.0.0")
 								.append("\nmaven_group=").append(group)
-								.append("\narchives_base_name=").append(wnm);
+								.append("\narchives_base_name=").append(workspaceModId)
+								.append("\n\n# Other APIs");
 
-								File gradleProperties = new File(dir, "gradle.properties");
-								ResourceLoader.write(gradleProperties, properties.toString());
+								// Add libs to buildscript and properties
+								StringBuilder libsScript = new StringBuilder();
 
-								File wrapperDir = new File(dir, "gradle/wrapper");
-								wrapperDir.mkdirs();
+								if (fabricAPI.isSelected()) {
+									libsScript.append("\nmodImplementation \"net.fabricmc.fabric-api:fabric-api:${project.fabric_version}\"");
+									properties.append("\nfabric_version=").append(vsn.getStringValue("fabric_api"));
+								}
 
-								File wrapperProperties = new File(wrapperDir, "gradle-wrapper.properties");
-								ResourceLoader.write(wrapperProperties, ResourceLoader.readOnlineOrLocal("gradle/wrapper/gradle-wrapper.properties.txt"));
+								if (cardinalComponents.isSelected()) {
+									libsScript.append("\nmodImplementation \"com.github.OnyxStudios.Cardinal-Components-API:Cardinal-Components-API:${project.cardinal_version}\"");
+									libsScript.append("\ninclude \"com.github.OnyxStudios.Cardinal-Components-API:Cardinal-Components-API:${project.cardinal_version}\"");
+									properties.append("\ncardinal_version=").append(vsn.getStringValue("cardinal_components"));
+								}
 
-								ResourceLoader.copyJar(new File(wrapperDir, "gradle-wrapper.jar"), "gradle/wrapper/gradle-wrapper.jar");
+								if (zoesteriaConfig.isSelected()) {
+									libsScript.append("\nimplementation \"tk.valoeghese:ZoesteriaConfig:${project.zoesteria_config_version}\"");
+									libsScript.append("\ninclude \"tk.valoeghese:ZoesteriaConfig:${project.zoesteria_config_version}\"");
+									properties.append("\nzoesteria_config_version=").append(masterOptions.getStringValue("zoesteria_config_latest"));
+								}
+
+								// Gradle stuff
+								{
+									File gradleBuild = new File(dir, "build.gradle");
+									String buildScript = ResourceManager.readOnlineOrLocal("build.gradle.txt");
+									ResourceManager.write(gradleBuild, buildScript);
+
+									File gitignore = new File(dir, ".gitignore");
+									ResourceManager.write(gitignore, ResourceManager.readOnlineOrLocal("gitignore.txt"));
+
+									File gradleProperties = new File(dir, "gradle.properties");
+									ResourceManager.write(gradleProperties, properties.toString());
+
+									File wrapperDir = new File(dir, "gradle/wrapper");
+									wrapperDir.mkdirs();
+
+									File wrapperProperties = new File(wrapperDir, "gradle-wrapper.properties");
+									ResourceManager.write(wrapperProperties, ResourceManager.readOnlineOrLocal("gradle/wrapper/gradle-wrapper.properties.txt"));
+
+									ResourceManager.copyJar(new File(wrapperDir, "gradle-wrapper.jar"), "gradle/wrapper/gradle-wrapper.jar");
+								}
+
+								File run = new File(dir, "run");
+								run.mkdir();
+
+								String modName = toTitleCase(workspaceModId.replace('_', ' '));
+								String mainClassName = modName.replaceAll(" ", "");
+								Replacement replacement = new Replacement()
+										.replaces("%MODID%", workspaceModId)
+										.replaces("%MODNAME%", modName)
+										.replaces("%MAINCLASS%", mainClassName)
+										.replaces("%GROUP%", group);
+
+								// Mod Resources
+								{
+									File srcmainresources = new File(dir, "src/main/resources");
+
+									// Mod Json
+									String modJsonContent = replacement.apply(ResourceManager.readOnlineOrLocal("fabric.mod.json"));
+									File modJson = new File(srcmainresources, "fabric.mod.json");
+									ResourceManager.write(modJson, modJsonContent);
+
+									// Mixins Json
+									String mixinJsonContent = replacement.apply(ResourceManager.readOnlineOrLocal("mixins.json"));
+									File mixinsJson = new File(srcmainresources, workspaceModId + ".mixins.json");
+									ResourceManager.write(mixinsJson, mixinJsonContent);
+								}
 							}
 						}
 						return;
@@ -159,9 +217,38 @@ public class Main {
 			frame.setTitle("Fabric Setup");
 			frame.pack();
 			frame.setVisible(true);
+
+			int mVer = masterOptions.getIntegerValue("meta_version");
+
+			if (mVer > META_VER) {
+				JOptionPane.showMessageDialog(frame, "A new update is available. Please consider updating to the latest version of FabricSetup.");
+			}
 		} catch (Throwable t) {
 			byeBye(frame, t);
 		}
+	}
+
+	/*
+	 * Thanks to some random guy on stack overflow for existing in 2009.
+	 * NOTE: I changed toTitleCase to toUpperCase.
+	 * https://stackoverflow.com/questions/1086123/string-conversion-to-title-case.
+	 */
+	public static String toTitleCase(String input) {
+		StringBuilder result = new StringBuilder(input.length());
+		boolean capitalFlag = true;
+
+		for (char c : input.toCharArray()) {
+			if (Character.isSpaceChar(c)) {
+				capitalFlag = true;
+			} else if (capitalFlag) {
+				c = Character.toUpperCase(c);
+				capitalFlag = false;
+			}
+
+			result.append(c);
+		}
+
+		return result.toString();
 	}
 
 	private static void byeBye(JFrame frame, Throwable t) {
@@ -172,7 +259,7 @@ public class Main {
 		t.printStackTrace(new PrintStream(new StringOutputStream(sb)));
 
 		JPanel container = new JPanel(new BorderLayout(0, 10));
-		JTextArea error = ResourceLoader.makeWrapping(new JLabel("The following error occurred."));
+		JTextArea error = ResourceManager.makeWrapping(new JLabel("The following error occurred."));
 
 		Font font = new Font(error.getFont().getName(), Font.BOLD, 15);
 		error.setFont(font);

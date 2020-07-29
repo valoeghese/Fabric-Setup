@@ -9,3 +9,7 @@ build
 .project
 bin
 .settings
+
+# some test mod ids for testing
+modid
+test_mod
