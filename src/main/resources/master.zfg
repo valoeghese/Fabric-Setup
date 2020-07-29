@@ -1,7 +1,8 @@
 meta_version = 1;
 
+# all versions here must be defined in an object, such as the 1-16-1 object below for this version.
 versions = [
-  1.16.1; # all versions here must be defined in an object, such as the 1-16-1 object below for this version.
+  1.16.1;
 ]
 
 1-16-1 = {
