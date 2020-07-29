@@ -4,11 +4,12 @@ import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
-import java.awt.LayoutManager;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.io.PrintWriter;
@@ -101,7 +102,7 @@ public class Main {
 			JButton create = new JButton();
 			create.setText("Create Workspace");
 			create.addActionListener(e -> {
-				String wnm = modId.getText().trim(); // wkspcnm
+				String wnm = modId.getText().trim(); // workspace name
 
 				if (wnm != null && !wnm.isEmpty()) {
 					File dir = new File(wnm);
@@ -125,21 +126,29 @@ public class Main {
 							File gitignore = new File(dir, ".gitignore");
 							write(gitignore, readOnlineOrLocal("gitignore.txt"));
 
-							StringBuilder settingsText = new StringBuilder();
-							settingsText.append("# Done to increase the memory available to gradle.\n")
+							StringBuilder properties = new StringBuilder();
+							properties.append("# Done to increase the memory available to gradle.\n")
 							.append("org.gradle.jvmargs=-Xmx1G\n\n")
 							.append("# Fabric Properties\n")
 							.append("# check these on https://modmuss50.me/fabric.html")
 							.append("\nminecraft_version=").append(minecraftVersion.getSelectedItem())
-							.append("\nloader_version=").append("0.9.0+build.204")
+							.append("\nloader_version=").append(masterOptions.getStringValue("loader_latest"))
 							.append("\nyarn_build=").append(yarnBuild.getText())
-							.append("\n# Mod Properties\n")
+							.append("\n\n# Mod Properties")
 							.append("\nmod_version=1.0.0")
 							.append("\nmaven_group=").append(group)
 							.append("\narchives_base_name=").append(wnm);
 
-							File settingsGradle = new File(dir, "settings.gradle");
-							write(settingsGradle, settingsText.toString());
+							File gradleProperties = new File(dir, "gradle.properties");
+							write(gradleProperties, properties.toString());
+
+							File wrapperDir = new File(dir, "gradle/wrapper");
+							wrapperDir.mkdirs();
+
+							File wrapperProperties = new File(wrapperDir, "gradle-wrapper.properties");
+							write(wrapperProperties, readOnlineOrLocal("gradle-wrapper.properties.txt"));
+
+							copyJar(new File(wrapperDir, "gradle-wrapper.jar"), "gradle-wrapper.jar");
 						}
 					}
 					return;
@@ -214,6 +223,31 @@ public class Main {
 		}
 
 		return result;
+	}
+
+	private static void copyJar(File destination, String name) {
+		InputStream stream;
+
+		try {
+			URL url = new URL("https://raw.githubusercontent.com/valoeghese/Fabric-Setup/master/src/main/resources/" + name);
+			stream = url.openStream();
+		} catch (IOException e) {
+			System.out.println("Likely no internet while retrieving online file for " + name + ", reverting to local copy.");
+			stream = ResourceLoader.load(name);
+		}
+
+		try (FileOutputStream output = new FileOutputStream(destination)) {
+			int nBytesRead;
+			byte[] bufferBuffer = new byte[0x4000];
+
+			while ((nBytesRead = stream.read(bufferBuffer, 0, bufferBuffer.length)) != -1) {
+				output.write(bufferBuffer, 0, nBytesRead);
+			}
+
+			stream.close();
+		} catch (IOException e) {
+			throw new UncheckedIOException(e);
+		}
 	}
 
 	private static void write(File file, String string) {
