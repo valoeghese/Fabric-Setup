@@ -4,12 +4,14 @@ import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
+import java.awt.LayoutManager;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.io.PrintWriter;
 import java.io.UncheckedIOException;
 import java.net.URL;
 
@@ -39,12 +41,21 @@ public class Main {
 			WritableConfig masterOptions = parseOnlineOrLocal("master.zfg");
 
 			JPanel master = new JPanel(new BorderLayout());
-			master.setPreferredSize(new Dimension(250, 320));
+			master.setPreferredSize(new Dimension(275, 350));
 
 			// top
-			JTextField workspaceName = new JTextField();
-			master.setBorder(new TitledBorder("Workspace Name"));
-			master.add(workspaceName, BorderLayout.NORTH);
+			JPanel overallInfo = new JPanel(new BorderLayout());
+
+			JTextField modId = new JTextField();
+			modId.setText("modid");
+			modId.setBorder(new TitledBorder("Mod Id"));
+			overallInfo.add(modId, BorderLayout.NORTH);
+			JTextField mavenGroup = new JTextField();
+			mavenGroup.setText("com.example");
+			mavenGroup.setBorder(new TitledBorder("Maven Group"));
+			overallInfo.add(mavenGroup, BorderLayout.SOUTH);
+
+			master.add(overallInfo, BorderLayout.NORTH);
 
 			// centre
 			JPanel settings = new JPanel(new BorderLayout());
@@ -90,20 +101,51 @@ public class Main {
 			JButton create = new JButton();
 			create.setText("Create Workspace");
 			create.addActionListener(e -> {
-				String wnm = workspaceName.getText().trim();
+				String wnm = modId.getText().trim(); // wkspcnm
 
 				if (wnm != null && !wnm.isEmpty()) {
 					File dir = new File(wnm);
 
-					if (dir.exists()) {
-						JOptionPane.showMessageDialog(frame, "A file/folder with the given name already exists in this directory.", "File/Folder already exists!", JOptionPane.ERROR_MESSAGE);
+					if (dir.isFile() || (dir.isDirectory() && dir.listFiles().length > 1)) {
+						JOptionPane.showMessageDialog(frame, "A file/folder with the given mod id already exists in this directory.", "File/Folder already exists!", JOptionPane.ERROR_MESSAGE);
 					} else {
-						dir.mkdirs();
+						String group = mavenGroup.getText().trim();
+
+						if (group.isEmpty()) {
+							JOptionPane.showMessageDialog(frame, "Maven group is empty!", "Invalid maven group", JOptionPane.ERROR_MESSAGE);
+						} else {
+							dir.mkdirs();
+
+							File gradleSettings = new File(dir, "settings.gradle");
+							write(gradleSettings, readOnlineOrLocal("settings.gradle.txt"));
+
+							File gradleBuild = new File(dir, "build.gradle");
+							write(gradleBuild, readOnlineOrLocal("build.gradle.txt"));
+
+							File gitignore = new File(dir, ".gitignore");
+							write(gitignore, readOnlineOrLocal("gitignore.txt"));
+
+							StringBuilder settingsText = new StringBuilder();
+							settingsText.append("# Done to increase the memory available to gradle.\n")
+							.append("org.gradle.jvmargs=-Xmx1G\n\n")
+							.append("# Fabric Properties\n")
+							.append("# check these on https://modmuss50.me/fabric.html")
+							.append("\nminecraft_version=").append(minecraftVersion.getSelectedItem())
+							.append("\nloader_version=").append("0.9.0+build.204")
+							.append("\nyarn_build=").append(yarnBuild.getText())
+							.append("\n# Mod Properties\n")
+							.append("\nmod_version=1.0.0")
+							.append("\nmaven_group=").append(group)
+							.append("\narchives_base_name=").append(wnm);
+
+							File settingsGradle = new File(dir, "settings.gradle");
+							write(settingsGradle, settingsText.toString());
+						}
 					}
 					return;
 				}
 
-				JOptionPane.showMessageDialog(frame, "The workspace name is either empty or contains invalid characters. Please try again.", "Invalid workspace name!", JOptionPane.ERROR_MESSAGE);
+				JOptionPane.showMessageDialog(frame, "The mod id is empty!. Please try again.", "Invalid workspace name!", JOptionPane.ERROR_MESSAGE);
 			});
 			master.add(create, BorderLayout.SOUTH);
 
@@ -172,6 +214,14 @@ public class Main {
 		}
 
 		return result;
+	}
+
+	private static void write(File file, String string) {
+		try (PrintWriter pw = new PrintWriter(file)) {
+			pw.write(string);
+		} catch (IOException e) {
+			throw new UncheckedIOException(e);
+		}
 	}
 
 	// wow thanks stackoverflow
