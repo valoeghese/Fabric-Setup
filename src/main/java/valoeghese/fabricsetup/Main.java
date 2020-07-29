@@ -190,6 +190,7 @@ public class Main {
 								// Mod Resources
 								{
 									File srcmainresources = new File(dir, "src/main/resources");
+									srcmainresources.mkdirs();
 
 									// Mod Json
 									String modJsonContent = replacement.apply(ResourceManager.readOnlineOrLocal("fabric.mod.json"));
@@ -200,6 +201,19 @@ public class Main {
 									String mixinJsonContent = replacement.apply(ResourceManager.readOnlineOrLocal("mixins.json"));
 									File mixinsJson = new File(srcmainresources, workspaceModId + ".mixins.json");
 									ResourceManager.write(mixinsJson, mixinJsonContent);
+								}
+
+								// Mod Sources
+								{
+									File srcmainjava = new File(dir, "src/main/java");
+									srcmainjava.mkdirs();
+
+									// Main Class
+									String mainClassContent = replacement.apply(ResourceManager.readOnlineOrLocal("mainclass.txt"));
+									File mainPackage = new File(srcmainjava, group.replace('.', '/') + "/" + workspaceModId);
+									mainPackage.mkdirs();
+									File mainClass = new File(mainPackage, mainClassName + ".java");
+									ResourceManager.write(mainClass, mainClassContent);
 								}
 							}
 						}
