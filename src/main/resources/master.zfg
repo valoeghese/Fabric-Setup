@@ -9,6 +9,8 @@ versions = [
   yarn_latest = 21;
   fabric_api = 0.16.0+build.384-1.16.1;
   cardinal_components = 2.4.2;
+  auto_config = 3.2.1-unstable;
+  terraform = 2.1.7+build.31;
 }
 
 loader_latest = 0.9.0+build.204;

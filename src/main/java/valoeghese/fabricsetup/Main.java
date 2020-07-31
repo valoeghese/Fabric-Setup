@@ -2,7 +2,6 @@ package valoeghese.fabricsetup;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
-import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
@@ -12,11 +11,11 @@ import java.io.OutputStream;
 import java.io.PrintStream;
 
 import javax.swing.JButton;
-import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -32,6 +31,8 @@ public class Main {
 	// (Not when merely changing resources, as they can be fetched from online)
 	private static final int META_VER = 1;
 
+	public static final int DEFAULT_WIDTH = 290;
+
 	public static void main(String[] args) throws Throwable {
 		JFrame frame = new JFrame();
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -40,7 +41,7 @@ public class Main {
 			WritableConfig masterOptions = ResourceManager.parseOnlineOrLocal("master.zfg");
 
 			JPanel master = new JPanel(new BorderLayout());
-			master.setPreferredSize(new Dimension(275, 350));
+			master.setPreferredSize(new Dimension(DEFAULT_WIDTH, 350));
 
 			// top
 			JPanel overallInfo = new JPanel(new BorderLayout());
@@ -74,24 +75,48 @@ public class Main {
 			settings.add(pureMC, BorderLayout.NORTH);
 
 			// Lib stuff - FAPI, CC, ZFG, ACFG, Terraform
-			JPanel libs = new JPanel(new FlowLayout(FlowLayout.LEFT));
+			JPanel libs = new JPanel(new BorderLayout());
 			libs.setBorder(new TitledBorder("Libraries"));
 
-			JCheckBox fabricAPI = new JCheckBox("Fabric API");
-			fabricAPI.setSelected(true);
-			libs.add(fabricAPI);
+			JPanel lists = new JPanel(new BorderLayout());
 
-			JCheckBox cardinalComponents = new JCheckBox("Cardinal Components");
-			libs.add(cardinalComponents);
+			JList<String> options = Library.options();
+			options.setBorder(new TitledBorder("Unselected"));
+			options.setPreferredSize(new Dimension(DEFAULT_WIDTH / 2 - 15, 150));
+			lists.add(new JScrollPane(options), BorderLayout.WEST);
 
-			JCheckBox zoesteriaConfig = new JCheckBox("Zoesteria Config");
-			libs.add(zoesteriaConfig);
+			JList<String> selected = Library.selected();
+			selected.setBorder(new TitledBorder("Selected"));
+			selected.setPreferredSize(new Dimension(DEFAULT_WIDTH / 2 - 15, 150));
+			lists.add(new JScrollPane(selected), BorderLayout.EAST);
 
-			JCheckBox autoConfig = new JCheckBox("AutoConfig");
-			libs.add(autoConfig);
+			libs.add(lists, BorderLayout.CENTER);
 
-			JCheckBox terraform = new JCheckBox("Terraform");
-			libs.add(terraform);
+			// buttons
+			JPanel buttons = new JPanel(new BorderLayout());
+			buttons.setPreferredSize(new Dimension(DEFAULT_WIDTH, 20));
+
+			JButton sel = new JButton("Select");
+			sel.addActionListener(event -> {
+				String val = options.getSelectedValue();
+
+				if (val != null) {
+					Library.select(val);
+				}
+			});
+			buttons.add(sel, BorderLayout.WEST);
+
+			JButton desel = new JButton("Deselect");
+			desel.addActionListener(event -> {
+				String val = selected.getSelectedValue();
+
+				if (val != null) {
+					Library.deselect(val);
+				}
+			});
+			buttons.add(desel, BorderLayout.EAST);
+
+			libs.add(buttons, BorderLayout.SOUTH);
 
 			settings.add(libs, BorderLayout.CENTER);
 			master.add(settings, BorderLayout.CENTER);
@@ -138,27 +163,21 @@ public class Main {
 								// Add libs to buildscript and properties
 								StringBuilder libsScript = new StringBuilder();
 
-								if (fabricAPI.isSelected()) {
-									libsScript.append("\nmodImplementation \"net.fabricmc.fabric-api:fabric-api:${project.fabric_version}\"");
-									properties.append("\nfabric_version=").append(vsn.getStringValue("fabric_api"));
-								}
+								Library.getSelected().forEach(lib -> {
+									String version = lib.mcDependent ? vsn.getStringValue(lib.manifestKey) : masterOptions.getStringValue(lib.manifestKey);
+									properties.append("\n\t").append(lib.propertiesKey).append('=').append(version);
+									libsScript.append("\n\t").append(lib.mcDependent ? "modImplementation" : "implementation").append(" \"").append(lib.mavenKey).append(":${project.").append(lib.propertiesKey).append("}\"");
 
-								if (cardinalComponents.isSelected()) {
-									libsScript.append("\nmodImplementation \"com.github.OnyxStudios.Cardinal-Components-API:Cardinal-Components-API:${project.cardinal_version}\"");
-									libsScript.append("\ninclude \"com.github.OnyxStudios.Cardinal-Components-API:Cardinal-Components-API:${project.cardinal_version}\"");
-									properties.append("\ncardinal_version=").append(vsn.getStringValue("cardinal_components"));
-								}
-
-								if (zoesteriaConfig.isSelected()) {
-									libsScript.append("\nimplementation \"tk.valoeghese:ZoesteriaConfig:${project.zoesteria_config_version}\"");
-									libsScript.append("\ninclude \"tk.valoeghese:ZoesteriaConfig:${project.zoesteria_config_version}\"");
-									properties.append("\nzoesteria_config_version=").append(masterOptions.getStringValue("zoesteria_config_latest"));
-								}
+									if (lib != Library.FABRIC) {
+										libsScript.append("\n\tinclude \"").append(lib.mavenKey).append(":${project.").append(lib.propertiesKey).append("}\"");
+									}
+								});
 
 								// Gradle stuff
 								{
 									File gradleBuild = new File(dir, "build.gradle");
 									String buildScript = ResourceManager.readOnlineOrLocal("build.gradle.txt");
+									buildScript.replaceAll("\t\\/\\/@INJECTHERE", libsScript.toString());
 									ResourceManager.write(gradleBuild, buildScript);
 
 									File gitignore = new File(dir, ".gitignore");
