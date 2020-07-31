@@ -177,7 +177,7 @@ public class Main {
 								{
 									File gradleBuild = new File(dir, "build.gradle");
 									String buildScript = ResourceManager.readOnlineOrLocal("build.gradle.txt");
-									buildScript.replaceAll("\t\\/\\/@INJECTHERE", libsScript.toString());
+									buildScript.replaceAll("\tINJECTHERE", libsScript.toString());
 									ResourceManager.write(gradleBuild, buildScript);
 
 									File gitignore = new File(dir, ".gitignore");
