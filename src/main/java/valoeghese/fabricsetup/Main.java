@@ -9,6 +9,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.util.List;
 
 import javax.swing.JButton;
 import javax.swing.JComboBox;
@@ -39,6 +40,7 @@ public class Main {
 
 		try {
 			WritableConfig masterOptions = ResourceManager.parseOnlineOrLocal("master.zfg");
+			Library.addMCLibs(masterOptions.getList("mclibs"), masterOptions.getContainer("mclibsData"));
 
 			JPanel master = new JPanel(new BorderLayout());
 			master.setPreferredSize(new Dimension(DEFAULT_WIDTH, 350));
@@ -169,7 +171,7 @@ public class Main {
 									properties.append("\n\t").append(lib.propertiesKey).append('=').append(version);
 									libsScript.append("\n\t").append(lib.mcDependent ? "modImplementation" : "implementation").append(" \"").append(lib.mavenKey).append(":${project.").append(lib.propertiesKey).append("}\"");
 
-									if (lib != Library.FABRIC) {
+									if (!lib.name.equals("Fabric API")) {
 										libsScript.append("\n\tinclude \"").append(lib.mavenKey).append(":${project.").append(lib.propertiesKey).append("}\"");
 									}
 								});
@@ -253,12 +255,17 @@ public class Main {
 			});
 			master.add(create, BorderLayout.SOUTH);
 
+			int mVer = masterOptions.getIntegerValue("meta_version");
+			String title = "Fabric Setup";
+
+			if (META_VER > mVer) {
+				title += " [Dev]";
+			}
+
 			frame.add(master);
-			frame.setTitle("Fabric Setup");
+			frame.setTitle(title);
 			frame.pack();
 			frame.setVisible(true);
-
-			int mVer = masterOptions.getIntegerValue("meta_version");
 
 			if (mVer > META_VER) {
 				JOptionPane.showMessageDialog(frame, "A new update is available. Please consider updating to the latest version of FabricSetup.");

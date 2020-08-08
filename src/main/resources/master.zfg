@@ -12,6 +12,29 @@ mclibs = [
   terraform;
 ]
 
+mclibsData = {
+  fabric_api = [
+    net.fabricmc.fabric-api:fabric-api;
+	fabric_version;
+	Fabric API;
+  ]
+  cardinal_components = [
+    com.github.OnyxStudios.Cardinal-Components-API:Cardinal-Components-API;
+	cardinal_version;
+	Cardinal Components;
+  ]
+  auto_config = [
+    me.sargunvohra.mcmods:autoconfig1u;
+	autoconfig_version;
+	Auto Config;
+  ]
+  terraform = [
+    com.terraformersmc:terraform;
+	terraform_version;
+	Terraform;
+  ]
+}
+
 1-16-1 = {
   yarn_latest = 21;
   fabric_api = 0.16.0+build.384-1.16.1;

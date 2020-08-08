@@ -1,11 +1,15 @@
 package valoeghese.fabricsetup;
 
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
 
 import javax.swing.DefaultListModel;
 import javax.swing.JList;
+
+import tk.valoeghese.zoesteriaconfig.api.container.Container;
 
 public class Library {
 	private Library (boolean mcDependent, String mavenKey, String propertiesKey, String manifestKey, String name) {
@@ -24,6 +28,14 @@ public class Library {
 	public final String propertiesKey;
 	public final String manifestKey;
 	public final String name;
+
+	public static void addMCLibs(List<Object> keys, Container data) {
+		for (Object o : keys) {
+			String key = (String) o;
+			List<Object> libData = data.getList(key);
+			MCLIBS.add(new Library(true, (String) libData.get(0), (String) libData.get(1), key, (String) libData.get(2)));
+		}
+	}
 
 	public static JList<String> options() {
 		return new JList<>(LIBS_OPTIONS);
@@ -52,12 +64,9 @@ public class Library {
 	private static final Map<Object, Library> REVERSE_MAP = new LinkedHashMap<>();
 	private static final DefaultListModel<String> LIBS_OPTIONS = new DefaultListModel<>();
 	private static final DefaultListModel<String> LIBS_SELECTED = new DefaultListModel<>();
+	private static final List<Library> MCLIBS = new ArrayList<>();
 
-	public static final Library FABRIC = new Library(true, "net.fabricmc.fabric-api:fabric-api", "fabric_version", "fabric_api", "Fabric API");
-	public static final Library CARDINAL = new Library(true, "com.github.OnyxStudios.Cardinal-Components-API:Cardinal-Components-API", "cardinal_version", "cardinal_components", "Cardinal Components");
 	public static final Library ZOESTERIA_CONFIG = new Library(false, "tk.valoeghese:ZoesteriaConfig", "zoesteria_config_version", "zoesteria_config_latest", "ZoesteriaConfig");
-	public static final Library AUTOCONFIG = new Library(true, "me.sargunvohra.mcmods:autoconfig1u", "autoconfig_version", "auto_config", "Auto Config");
-	public static final Library TERRAFORM = new Library(true, "com.terraformersmc:terraform", "terraform_version", "terraform", "Terraform");
 
 	static {
 		select("Fabric API");
