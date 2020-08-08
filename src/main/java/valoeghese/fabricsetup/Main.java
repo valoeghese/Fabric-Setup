@@ -308,7 +308,7 @@ public class Main {
 		LinkedHashMap<String, Object> data = new LinkedHashMap<>();
 		data.put(".comment", new Comment("Will be used in the future for updating workspaces to new versions."));
 		WritableConfig result = ZoesteriaConfig.createWritableConfig(data);
-//		result.addComment("Will be used in the future for updating workspaces to new versions.");
+		//		result.addComment("Will be used in the future for updating workspaces to new versions.");
 		result.putStringValue("minecraft", mcVer);
 		result.putStringValue("yarn", yarnVer);
 		result.putList("libs", libs);
