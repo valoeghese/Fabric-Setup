@@ -9,6 +9,8 @@ import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.util.LinkedHashMap;
+import java.util.List;
 
 import javax.swing.JButton;
 import javax.swing.JComboBox;
@@ -23,8 +25,10 @@ import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.border.TitledBorder;
 
+import tk.valoeghese.zoesteriaconfig.api.ZoesteriaConfig;
 import tk.valoeghese.zoesteriaconfig.api.container.Container;
 import tk.valoeghese.zoesteriaconfig.api.container.WritableConfig;
+import tk.valoeghese.zoesteriaconfig.api.deserialiser.Comment;
 
 public class Main {
 	// Increment this and the ver in master.zfg when a change is made to the java program
@@ -206,6 +210,9 @@ public class Main {
 								File run = new File(dir, "run");
 								run.mkdir();
 
+								// mod manifest
+								createSelected((String) minecraftVersion.getSelectedItem(), yarnBuild.getText(), Library.getSelectedNames()).writeToFile(new File(dir, "fsetup_manifest.zfg"));
+
 								String modName = toTitleCase(workspaceModId.replace('_', ' '));
 								String mainClassName = modName.replaceAll(" ", "");
 								Replacement replacement = new Replacement()
@@ -295,6 +302,18 @@ public class Main {
 		}
 
 		return result.toString();
+	}
+
+	private static WritableConfig createSelected(String mcVer, String yarnVer, List<Object> libs) {
+		LinkedHashMap<String, Object> data = new LinkedHashMap<>();
+		data.put(".comment", new Comment("Will be used in the future for updating workspaces to new versions."));
+		WritableConfig result = ZoesteriaConfig.createWritableConfig(data);
+//		result.addComment("Will be used in the future for updating workspaces to new versions.");
+		result.putStringValue("minecraft", mcVer);
+		result.putStringValue("yarn", yarnVer);
+		result.putList("libs", libs);
+
+		return result;
 	}
 
 	private static void byeBye(JFrame frame, Throwable t) {

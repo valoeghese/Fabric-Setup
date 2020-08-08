@@ -1,6 +1,7 @@
 package valoeghese.fabricsetup;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -14,7 +15,12 @@ import tk.valoeghese.zoesteriaconfig.api.container.Container;
 public class Library {
 	private Library (boolean mcDependent, String mavenKey, String propertiesKey, String manifestKey, String name) {
 		REVERSE_MAP.put(name, this);
-		LIBS_OPTIONS.addElement(name);
+
+		if (name.equals("Fabric API")) {
+			LIBS_SELECTED.addElement(name);
+		} else {
+			LIBS_OPTIONS.addElement(name);
+		}
 
 		this.mcDependent = mcDependent;
 		this.mavenKey = mavenKey;
@@ -55,6 +61,10 @@ public class Library {
 		LIBS_OPTIONS.addElement(name);
 	}
 
+	public static List<Object> getSelectedNames() {
+		return Arrays.asList(LIBS_SELECTED.toArray());
+	}
+
 	public static Stream<Library> getSelected() {
 		return Stream.of(LIBS_SELECTED.toArray())
 				.map(REVERSE_MAP::get)
@@ -67,8 +77,4 @@ public class Library {
 	private static final List<Library> MCLIBS = new ArrayList<>();
 
 	public static final Library ZOESTERIA_CONFIG = new Library(false, "tk.valoeghese:ZoesteriaConfig", "zoesteria_config_version", "zoesteria_config_latest", "ZoesteriaConfig");
-
-	static {
-		select("Fabric API");
-	}
 }
