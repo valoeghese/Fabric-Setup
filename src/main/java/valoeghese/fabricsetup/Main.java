@@ -43,6 +43,7 @@ public class Main {
 
 		try {
 			WritableConfig masterOptions = ResourceManager.parseOnlineOrLocal("master.zfg");
+			System.out.println(masterOptions.getIntegerValue("meta_version"));
 			Library.addMCLibs(masterOptions.getList("mclibs"), masterOptions.getContainer("mclibsData"));
 
 			JPanel master = new JPanel(new BorderLayout());
