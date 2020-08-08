@@ -29,7 +29,7 @@ import tk.valoeghese.zoesteriaconfig.api.container.WritableConfig;
 public class Main {
 	// Increment this and the ver in master.zfg when a change is made to the java program
 	// (Not when merely changing resources, as they can be fetched from online)
-	private static final int META_VER = 1;
+	private static final int META_VER = 2;
 
 	public static final int DEFAULT_WIDTH = 290;
 

@@ -1,8 +1,15 @@
-meta_version = 1;
+meta_version = 2;
 
 # all versions here must be defined in an object, such as the 1-16-1 object below for this version.
 versions = [
   1.16.1;
+]
+
+mclibs = [
+  fabric_api;
+  cardinal_components;
+  auto_config;
+  terraform;
 ]
 
 1-16-1 = {
