@@ -9,7 +9,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
-import java.util.List;
 
 import javax.swing.JButton;
 import javax.swing.JComboBox;
@@ -32,7 +31,7 @@ public class Main {
 	// (Not when merely changing resources, as they can be fetched from online)
 	private static final int META_VER = 2;
 
-	public static final int DEFAULT_WIDTH = 290;
+	public static final int DEFAULT_WIDTH = 300;
 
 	public static void main(String[] args) throws Throwable {
 		JFrame frame = new JFrame();
@@ -43,7 +42,7 @@ public class Main {
 			Library.addMCLibs(masterOptions.getList("mclibs"), masterOptions.getContainer("mclibsData"));
 
 			JPanel master = new JPanel(new BorderLayout());
-			master.setPreferredSize(new Dimension(DEFAULT_WIDTH, 350));
+			master.setPreferredSize(new Dimension(DEFAULT_WIDTH, 375));
 
 			// top
 			JPanel overallInfo = new JPanel(new BorderLayout());
