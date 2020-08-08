@@ -261,10 +261,11 @@ public class Main {
 			});
 			master.add(create, BorderLayout.SOUTH);
 
-			int mVer = masterOptions.getIntegerValue("meta_version");
+			System.out.println(masterOptions.asMap());
+			int latestVer = masterOptions.getIntegerValue("meta_version");
 			String title = "Fabric Setup";
 
-			if (META_VER > mVer) {
+			if (META_VER > latestVer) {
 				title += " [Dev]";
 			}
 
@@ -273,7 +274,7 @@ public class Main {
 			frame.pack();
 			frame.setVisible(true);
 
-			if (mVer > META_VER) {
+			if (latestVer > META_VER) {
 				JOptionPane.showMessageDialog(frame, "A new update is available. Please consider updating to the latest version of FabricSetup.");
 			}
 		} catch (Throwable t) {
