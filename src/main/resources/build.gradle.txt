@@ -16,7 +16,6 @@ group = "${project.maven_group}"
 version = "${project.mod_version}+${project.minecraft_version}"
 
 minecraft {
-	accessWidener "src/main/resources/epic_fantasy.aw"
 }
 
 repositories {

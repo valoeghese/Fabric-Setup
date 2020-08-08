@@ -69,6 +69,7 @@ public class Main {
 			pureMC.add(minecraftVersion, BorderLayout.NORTH);
 
 			JTextField yarnBuild = new JTextField();
+			yarnBuild.setBorder(new TitledBorder("Yarn Build"));
 			yarnBuild.setText(masterOptions.getStringValue(vs[0].replace('.', '-') + ".yarn_latest"));
 			pureMC.add(yarnBuild, BorderLayout.SOUTH);
 
@@ -175,6 +176,12 @@ public class Main {
 
 								// Gradle stuff
 								{
+									File gradleBat = new File(dir, "gradlew.bat");
+									ResourceManager.write(gradleBat, ResourceManager.readOnlineOrLocal("gradlew.bat.txt"));
+
+									File gradlew = new File(dir, "gradlew");
+									ResourceManager.write(gradlew, ResourceManager.readOnlineOrLocal("gradlew.txt"));
+
 									File gradleBuild = new File(dir, "build.gradle");
 									String buildScript = ResourceManager.readOnlineOrLocal("build.gradle.txt");
 									buildScript = buildScript.replace("INJECTHERE", libsScript.toString());
