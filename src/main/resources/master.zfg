@@ -11,6 +11,7 @@ mclibs = [
   cardinal_components;
   auto_config;
   terraform;
+  toomanyevents;
 ]
 
 mclibsData = {
@@ -34,6 +35,11 @@ mclibsData = {
 	terraform_version;
 	Terraform;
   ]
+  toomanyevents = [
+    com.github.fabric-community;
+	tme_version;
+	TooManyEvents;
+  ]
 }
 
 1-16-2 = {
@@ -42,6 +48,7 @@ mclibsData = {
   cardinal_components = 2.5.0;
   auto_config = 3.2.1-unstable;
   terraform = 2.1.7+build.31;
+  toomanyevents = 1.1.0;
 }
 
 1-16-1 = {
@@ -50,6 +57,7 @@ mclibsData = {
   cardinal_components = 2.4.2;
   auto_config = 3.2.1-unstable;
   terraform = 2.1.7+build.31;
+  toomanyevents = UNSUPPORTED_VERSION;
 }
 
 loader_latest = 0.9.2+build.206;
