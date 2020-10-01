@@ -2,6 +2,7 @@ meta_version = 2;
 
 # all versions here must be defined in an object, such as the 1-16-1 object below for this version.
 versions = [
+  1.16.3;
   1.16.2;
   1.16.1;
 ]
@@ -42,8 +43,17 @@ mclibsData = {
   ]
 }
 
+1-16-3 = {
+  yarn_latest = 17;
+  fabric_api = 0.22.1+build.409-1.16;
+  cardinal_components = 2.6.0;
+  auto_config = 3.2.1-unstable;
+  terraform = 2.1.7+build.31;
+  toomanyevents = 1.1.0;
+}
+
 1-16-2 = {
-  yarn_latest = 21;
+  yarn_latest = 47;
   fabric_api = 0.19.0+build.398-1.16;
   cardinal_components = 2.5.0;
   auto_config = 3.2.1-unstable;
