@@ -49,7 +49,7 @@ mclibsData = {
   cardinal_components = 2.6.0;
   auto_config = 3.2.1-unstable;
   terraform = 2.1.7+build.31;
-  toomanyevents = 1.1.0;
+  toomanyevents = 1.2.0;
 }
 
 1-16-2 = {
