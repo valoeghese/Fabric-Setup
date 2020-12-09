@@ -33,7 +33,7 @@ import tk.valoeghese.zoesteriaconfig.api.deserialiser.Comment;
 public class Main {
 	// Increment this and the ver in master.zfg when a change is made to the java program
 	// (Not when merely changing resources, as they can be fetched from online)
-	private static final int META_VER = 2;
+	private static final int META_VER = 3;
 
 	public static final int DEFAULT_WIDTH = 300;
 
@@ -212,7 +212,11 @@ public class Main {
 								run.mkdir();
 
 								// mod manifest
-								createSelected((String) minecraftVersion.getSelectedItem(), yarnBuild.getText(), Library.getSelectedNames()).writeToFile(new File(dir, "fsetup_manifest.zfg"));
+								createSelected((String) minecraftVersion.getSelectedItem(),
+										yarnBuild.getText(),
+										group,
+										workspaceModId,
+										Library.getSelectedNames()).writeToFile(new File(dir, "fsetup_manifest.zfg"));
 
 								String modName = toTitleCase(workspaceModId.replace('_', ' '));
 								String mainClassName = modName.replaceAll(" ", "");
@@ -306,13 +310,15 @@ public class Main {
 		return result.toString();
 	}
 
-	private static WritableConfig createSelected(String mcVer, String yarnVer, List<Object> libs) {
+	private static WritableConfig createSelected(String mcVer, String yarnVer, String group, String modid, List<Object> libs) {
 		LinkedHashMap<String, Object> data = new LinkedHashMap<>();
 		data.put(".comment", new Comment("Will be used in the future for updating workspaces to new versions."));
 		WritableConfig result = ZoesteriaConfig.createWritableConfig(data);
 		//		result.addComment("Will be used in the future for updating workspaces to new versions.");
 		result.putStringValue("minecraft", mcVer);
 		result.putStringValue("yarn", yarnVer);
+		result.putStringValue("group", group);
+		result.putStringValue("modid", modid);
 		result.putList("libs", libs);
 
 		return result;
