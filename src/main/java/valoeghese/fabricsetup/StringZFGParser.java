@@ -6,10 +6,10 @@ import java.util.List;
 import tk.valoeghese.zoesteriaconfig.api.container.WritableConfig;
 import tk.valoeghese.zoesteriaconfig.api.deserialiser.Comment;
 import tk.valoeghese.zoesteriaconfig.api.deserialiser.ZFGContainerDeserialiser;
-import tk.valoeghese.zoesteriaconfig.api.deserialiser.ZFGExtendedDeserialiser;
+import tk.valoeghese.zoesteriaconfig.api.deserialiser.ZFGDeserialiser;
 import tk.valoeghese.zoesteriaconfig.impl.parser.ImplZoesteriaConfigParser;
 
-public class StringZFGParser<E extends ZFGExtendedDeserialiser<T>, T> {
+public class StringZFGParser<E extends ZFGDeserialiser<T>, T> {
 	private int index, bufferSize;
 	protected final E deserialiser;
 
