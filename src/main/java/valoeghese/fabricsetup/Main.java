@@ -42,8 +42,8 @@ public class Main {
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
 		try {
-			WritableConfig masterOptions = ResourceManager.parseOnlineOrLocal("master.zfg");
-//			System.out.println(masterOptions.getIntegerValue("meta_version"));
+			final WritableConfig masterOptions = ResourceManager.parseOnlineOrLocal("master.zfg");
+			//			System.out.println(masterOptions.getIntegerValue("meta_version"));
 			Library.addMCLibs(masterOptions.getList("mclibs"), masterOptions.getContainer("mclibsData"));
 
 			JPanel master = new JPanel(new BorderLayout());
@@ -70,8 +70,14 @@ public class Main {
 			// Minecraft/Yarn Stuff
 			JPanel pureMC = new JPanel(new BorderLayout());
 			String[] vs = masterOptions.getList("versions").toArray(new String[0]);
-			JComboBox<String> minecraftVersion = new JComboBox<>(vs);
+			final JComboBox<String> minecraftVersion = new JComboBox<>(vs);
 			minecraftVersion.setBorder(new TitledBorder("Minecraft Version"));
+
+			// action listener to update available libraries
+			minecraftVersion.addActionListener(e -> {
+				updateAvailableLibs(masterOptions, (String) minecraftVersion.getSelectedItem());
+			});
+
 			pureMC.add(minecraftVersion, BorderLayout.NORTH);
 
 			JTextField yarnBuild = new JTextField();
@@ -127,6 +133,9 @@ public class Main {
 
 			settings.add(libs, BorderLayout.CENTER);
 			master.add(settings, BorderLayout.CENTER);
+
+			// update available sh1t
+			updateAvailableLibs(masterOptions, (String) minecraftVersion.getSelectedItem());
 
 			// bottom - button
 			JButton create = new JButton();
@@ -287,9 +296,15 @@ public class Main {
 		}
 	}
 
+	private static void updateAvailableLibs(Container masterOptions, String version) {
+		version = version.replace('.', '-');
+		Container data = masterOptions.getContainer(version);
+		Library.update(name -> data.containsKey(Library.getManifestKey(name)));
+	}
+
 	/*
 	 * Thanks to some random guy on stack overflow for existing in 2009.
-	 * NOTE: I changed toTitleCase to toUpperCase.
+	 * NOTE: I changed toTitleCase call to to toUpperCase.
 	 * https://stackoverflow.com/questions/1086123/string-conversion-to-title-case.
 	 */
 	public static String toTitleCase(String input) {

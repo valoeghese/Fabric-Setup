@@ -1,7 +1,8 @@
 meta_version = 3;
 
-# all versions here must be defined in an object, such as the 1-16-1 object below for this version.
+# all versions here must be defined in a container, such as the 1-16-1 container below for this version.
 versions = [
+  1.16.4;
   1.16.3;
   1.16.2;
   1.16.1;
@@ -43,12 +44,19 @@ mclibsData = {
   ]
 }
 
+1-16-4 = {
+  yarn_latest = 7;
+  fabric_api = 0.27.1+1.16;
+  cardinal_components = 2.7.4;
+  auto_config = 3.3.1;
+  toomanyevents = 1.2.0;
+}
+
 1-16-3 = {
   yarn_latest = 17;
   fabric_api = 0.22.1+build.409-1.16;
   cardinal_components = 2.6.0;
   auto_config = 3.2.1-unstable;
-  terraform = 2.1.7+build.31;
   toomanyevents = 1.2.0;
 }
 
@@ -67,7 +75,6 @@ mclibsData = {
   cardinal_components = 2.4.2;
   auto_config = 3.2.1-unstable;
   terraform = 2.1.7+build.31;
-  toomanyevents = UNSUPPORTED_VERSION;
 }
 
 loader_latest = 0.10.1+build.209;
