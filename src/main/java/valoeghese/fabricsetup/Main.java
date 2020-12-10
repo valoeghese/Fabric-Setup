@@ -33,7 +33,7 @@ import tk.valoeghese.zoesteriaconfig.api.deserialiser.Comment;
 public class Main {
 	// Increment this and the ver in master.zfg when a change is made to the java program
 	// (Not when merely changing resources, as they can be fetched from online)
-	private static final int META_VER = 3;
+	private static final int META_VER = 4;
 
 	public static final int DEFAULT_WIDTH = 300;
 
@@ -289,7 +289,7 @@ public class Main {
 			frame.setVisible(true);
 
 			if (latestVer > META_VER) {
-				JOptionPane.showMessageDialog(frame, "A new update is available. Please consider updating to the latest version of FabricSetup.");
+				JOptionPane.showMessageDialog(frame, "A new update is available. Please consider downloading the latest version of FabricSetup at github.com/valoeghese/Fabric-Setup.");
 			}
 		} catch (Throwable t) {
 			byeBye(frame, t);
@@ -299,7 +299,7 @@ public class Main {
 	private static void updateAvailableLibs(Container masterOptions, String version) {
 		version = version.replace('.', '-');
 		Container data = masterOptions.getContainer(version);
-		Library.update(name -> data.containsKey(Library.getManifestKey(name)));
+		Library.update(name -> name.equals("ZoesteriaConfig") || data.containsKey(Library.getManifestKey(name)));
 	}
 
 	/*
