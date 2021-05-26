@@ -25,6 +25,8 @@ import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.border.TitledBorder;
 
+import com.formdev.flatlaf.FlatLightLaf;
+
 import tk.valoeghese.zoesteriaconfig.api.ZoesteriaConfig;
 import tk.valoeghese.zoesteriaconfig.api.container.Container;
 import tk.valoeghese.zoesteriaconfig.api.container.WritableConfig;
@@ -33,11 +35,12 @@ import tk.valoeghese.zoesteriaconfig.api.deserialiser.Comment;
 public class Main {
 	// Increment this and the ver in master.zfg when a change is made to the java program
 	// (Not when merely changing resources, as they can be fetched from online)
-	private static final int META_VER = 4;
+	private static final int META_VER = 5;
 
-	public static final int DEFAULT_WIDTH = 300;
+	public static final int DEFAULT_WIDTH = 400;
 
 	public static void main(String[] args) throws Throwable {
+		FlatLightLaf.install();
 		JFrame frame = new JFrame();
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
