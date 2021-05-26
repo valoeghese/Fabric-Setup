@@ -1,5 +1,5 @@
 plugins {
-	id "fabric-loom" version "0.5-SNAPSHOT"
+	id "fabric-loom" version "0.7.30"
 	id "maven-publish"
 	id "com.jfrog.artifactory" version "4.15.2"
 }
@@ -26,6 +26,14 @@ repositories {
 		url = "https://maven.onyxstudios.dev"
 	}
 	maven { url 'https://jitpack.io' }
+	maven {
+		name = 'Ladysnake Mods'
+		url = 'https://ladysnake.jfrog.io/artifactory/mods'
+	}
+	maven {
+		name = "Terraformers"
+		url "https://maven.terraformersmc.com/"
+	}
 }
 
 dependencies {
