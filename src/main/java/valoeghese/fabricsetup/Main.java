@@ -35,7 +35,7 @@ import tk.valoeghese.zoesteriaconfig.api.deserialiser.Comment;
 public class Main {
 	// Increment this and the ver in master.zfg when a change is made to the java program
 	// (Not when merely changing resources, as they can be fetched from online)
-	private static final int META_VER = 5;
+	private static final int META_VER = 6;
 
 	public static final int DEFAULT_WIDTH = 400;
 
@@ -159,7 +159,8 @@ public class Main {
 								JOptionPane.showMessageDialog(frame, "Maven group is empty!", "Invalid maven group", JOptionPane.ERROR_MESSAGE);
 							} else {
 								dir.mkdirs();
-								Container vsn = masterOptions.getContainer(((String) minecraftVersion.getSelectedItem()).replace('.', '-'));
+								Container versionContainer = masterOptions.getContainer(((String) minecraftVersion.getSelectedItem()).replace('.', '-'));
+								ResourceManager.setSubdir(versionContainer.getStringValue("templates_subdir"));
 
 								File gradleSettings = new File(dir, "settings.gradle");
 								ResourceManager.write(gradleSettings, ResourceManager.readOnlineOrLocal("settings.gradle.txt"));
@@ -183,7 +184,7 @@ public class Main {
 								StringBuilder libsScript = new StringBuilder();
 
 								Library.getSelected().forEach(lib -> {
-									String version = lib.mcDependent ? vsn.getStringValue(lib.manifestKey) : masterOptions.getStringValue(lib.manifestKey);
+									String version = lib.mcDependent ? versionContainer.getStringValue(lib.manifestKey) : masterOptions.getStringValue(lib.manifestKey);
 									properties.append("\n\t").append(lib.propertiesKey).append('=').append(version);
 									libsScript.append("\n\t").append(lib.mcDependent ? "modImplementation" : "implementation").append(" \"").append(lib.mavenKey).append(":${project.").append(lib.propertiesKey).append("}\"");
 

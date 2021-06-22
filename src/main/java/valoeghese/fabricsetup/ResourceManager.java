@@ -19,6 +19,12 @@ import tk.valoeghese.zoesteriaconfig.impl.parser.ImplZoesteriaDefaultDeserialise
 
 // Taken and adapted from 2fc0f18 source, adding extra functionality as well.
 public final class ResourceManager {
+	private static String subdir;
+
+	public static void setSubdir(String subDir) {
+		subdir = subDir;
+	}
+
 	public static URL loadURL(String location) {
 		return ResourceManager.class.getClassLoader().getResource(location);
 	}
@@ -51,6 +57,10 @@ public final class ResourceManager {
 	}
 
 	public static String readOnlineOrLocal(String name) {
+		if ((name.endsWith(".txt") || name.contains("wrapper")) && subdir != null) {
+			name = subdir + "/" + name;
+		}
+
 		String result;
 
 		try {
