@@ -2,6 +2,7 @@ meta_version = 6;
 
 # all versions here must be defined in a container, such as the 1-16-1 container below for this version.
 versions = [
+  1.17.1;
   1.17;
   1.16.5;
   1.16.4;
@@ -68,6 +69,12 @@ mclibsData = {
 	tme_version;
 	TooManyEvents;
   ]
+}
+
+1-17-1 = {
+  templates_subdir = j16;
+  yarn_latest = 63;
+  fabric_api = 0.41.3+1.17;
 }
 
 1-17 = {
